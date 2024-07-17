@@ -1,16 +1,28 @@
-all : up
+COMPOSE := docker-compose -f srcs/docker-compose.yml
 
-up :
-	@docker-compose -f ./srcs/docker-compose.yml up -d
+all: build up
 
-down :
-	@docker-compose -f ./srcs/docker-compose.yml down
+build:
+	$(COMPOSE) build
 
-stop :
-	@docker-compose -f ./srcs/docker-compose.yml stop
+up:
+	$(COMPOSE) up -d
 
-start :
-	@docker-compose -f ./srcs/docker-compose.yml start
+down:
+	$(COMPOSE) down
 
-status :
-	@docker ps
+restart: down up
+
+ps:
+	$(COMPOSE) ps -a
+
+logs:
+	$(COMPOSE) logs -f
+
+exec-bash:
+	$(COMPOSE) exec -it ${ARG} bash
+
+clean:
+	docker system prune -a
+
+.PHONY: all build up down restart ps logs exec-bash
