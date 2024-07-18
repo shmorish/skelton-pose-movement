@@ -31,3 +31,5 @@ RUN rm -rf skelton-pose-movement
 
 WORKDIR /workspace/Lite-HRNet
 RUN pip3 install -r requirements.txt
+
+RUN echo "export PS1='Docker Lite-HRNet:\w\$ '" >> ~/.bashrc
