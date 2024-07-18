@@ -4,5 +4,7 @@ services:
   lite-hrnet:
     build: ./models/Lite-HRNet
     volumes:
-      - ./data:/workspace/Lite-HRNet/data  # データをホストと共有する場合
-      - ./pretrained:/workspace/Lite-HRNet/pretrained  # 学習済みモデルをホストと共有する場合
+      - ./models/Lite-HRNet:/workspace/Lite-HRNet
+    ports:
+      - "8080:8080"
+      

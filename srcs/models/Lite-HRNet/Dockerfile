@@ -1,26 +1,33 @@
-FROM pytorch/pytorch:1.9.0-cuda11.1-cudnn8-runtime
+FROM ubuntu:20.04
 
-#依存関係のインストール
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    git \
-    cmake \
-    build-essential \
-    libturbojpeg0-dev
+DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+git \
+python3-pip \
+ffmpeg \
+libsm6 \
+libxext6 \
+curl \
+unzip \
+wget \
+&& rm -rf /var/lib/apt/lists/*
 
-# Lite-HRNet リポジトリのクローン
-WORKDIR /workspace
-RUN git clone https://github.com/HRNet/Lite-HRNet.git
+RUN pip3 install --upgrade pip
 
-# COCOAPI のビルドとインストール
-WORKDIR /workspace/Lite-HRNet/lib/cocoapi/PythonAPI
-RUN python setup.py build_ext install
+RUN pip3 install numpy \
+opencv-python \
+torch \
+torchvision \
+tqdm \
+pyyaml \
+yacs \
+opencv-python-headless \
+scipy \
+scikit-image \
+scikit-learn
 
-# 作業ディレクトリの設定
+
+RUN pip3 install mmcv-full==1.3.8 -f https://download.openmmlab.com/mmcv/dist/cu102/torch1.9.0/index.html
+
 WORKDIR /workspace/Lite-HRNet
-
-# 環境変数の設定
-ENV PYTHONPATH "${PYTHONPATH}:/workspace/Lite-HRNet"
-
-# 推論の実行コマンド
-CMD ["python", "tools/test.py", "--cfg", "experiments/coco/hrnet/w32_256x192_adam_lr1e-3.yaml", "--modelDir", "pretrained/pose_coco/pose_hrnet_w32_256x192.pth"]
+RUN pip3 install -r requirements.txt
