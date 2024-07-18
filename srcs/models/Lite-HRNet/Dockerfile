@@ -14,20 +14,20 @@ wget \
 
 RUN pip3 install --upgrade pip
 
-RUN pip3 install numpy \
-opencv-python \
-torch \
-torchvision \
+RUN pip3 install \
 tqdm \
 pyyaml \
 yacs \
 opencv-python-headless \
-scipy \
 scikit-image \
 scikit-learn
 
+RUN mkdir -p /workspace
 
-RUN pip3 install mmcv-full==1.3.8 -f https://download.openmmlab.com/mmcv/dist/cu102/torch1.9.0/index.html
+WORKDIR /workspace
+RUN git clone https://github.com/shmorish/skelton-pose-movement.git
+RUN cp -r skelton-pose-movement/srcs/models/Lite-HRNet/ .
+RUN rm -rf skelton-pose-movement
 
 WORKDIR /workspace/Lite-HRNet
 RUN pip3 install -r requirements.txt
