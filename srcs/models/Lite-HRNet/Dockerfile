@@ -46,3 +46,11 @@ RUN echo "export PS1='Docker Lite-HRNet:\w\$ '" >> ~/.bashrc
 
 # python3 tools/test.py configs/top_down/lite_hrnet/coco/litehrnet_18_coco_256x192.py
 # CMD
+
+RUN curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg   && curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list |     sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' |     tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
+RUN sed -i -e '/experimental/ s/^#//g' /etc/apt/sources.list.d/nvidia-container-toolkit.list
+RUN apt-get update
+RUN apt-get install -y --no-install-recommends nvidia-container-toolkit
+RUN sed -i 's/^#no-cgroups = false/no-cgroups = false/' /etc/nvidia-container-runtime/config.toml
+
+RUN DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends nvidia-driver-515

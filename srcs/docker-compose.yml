@@ -7,4 +7,19 @@ services:
       - ./models/Lite-HRNet:/workspace/Lite-HRNet
     ports:
       - "8080:8080"
-      
+    tty: true
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+          devices:
+            - driver: nvidia
+              capabilities: [compute, utility]
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
