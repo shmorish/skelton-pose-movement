@@ -1,6 +1,6 @@
-COMPOSE := docker-compose -f srcs/docker-compose.yml
+COMPOSE := docker compose -f srcs/docker-compose.yml
 
-all: build up
+# all: build up
 
 build:
 	$(COMPOSE) build
@@ -11,7 +11,10 @@ up:
 down:
 	$(COMPOSE) down
 
-restart: down up
+# restart: down up
+
+run:
+	$(COMPOSE) run pytorch
 
 ps:
 	$(COMPOSE) ps -a

@@ -1,61 +1,61 @@
-FROM nvidia/cuda:11.8.0-base-ubuntu20.04
-
-RUN apt-get update
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends python3-pip
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends python3.9
-RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.9 1
-RUN update-alternatives --config python3
-
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends git
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ffmpeg
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends libsm6
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends libxext6
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends curl
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends unzip
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends wget
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends vim
-
-RUN pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
-RUN rm -rf /var/lib/apt/lists/*
-
-RUN pip3 install --upgrade pip
-
-RUN pip3 install \
-tqdm \
-pyyaml \
-yacs \
-opencv-python-headless \
-scikit-image \
-scikit-learn \
-ninja
-
-RUN mkdir -p /workspace
+FROM nvidia/cuda:11.3.1-devel-ubuntu20.04
 
 WORKDIR /workspace
-RUN git clone https://github.com/shmorish/skelton-pose-movement.git
-RUN cp -r skelton-pose-movement/srcs/models/Lite-HRNet/ .
-RUN rm -rf skelton-pose-movement
 
-WORKDIR /workspace/Lite-HRNet
-RUN pip3 install -r requirements.txt
+COPY ./requirements.txt ./requirement/requirements.txt
+COPY ./requirements/ ./requirement/requirements
 
-RUN pip install -U openmim
-# RUN mim install mmcv==2.0.0
+RUN apt-get update && apt-get install -y \
+    python3-pip \
+    git \
+    wget \
+    vim \
+    zip \
+    unzip \
+    curl \
+    libgl1-mesa-glx libglib2.0-0\
+    && rm -rf /var/lib/apt/lists/*
 
-RUN echo "export PS1='Docker Lite-HRNet:\w\$ '" >> ~/.bashrc
+RUN pip3 install --no-cache-dir --upgrade pip
+RUN pip3 install torch==1.12.1+cu113 torchvision==0.13.1+cu113 torchaudio==0.12.1 --extra-index-url https://download.pytorch.org/whl/cu113
+RUN pip3 install --no-cache-dir -r ./requirement/requirements.txt
+RUN pip3 install mmcv==1.6.0 -f https://download.openmmlab.com/mmcv/dist/cu113/torch1.12/index.html
+RUN pip3 install mmpose==0.25.1
+RUN pip3 install yapf==0.40.1
+RUN pip3 install mmengine
+RUN pip3 install opencv-python
 
-# python3 tools/test.py configs/top_down/lite_hrnet/coco/litehrnet_18_coco_256x192.py
-# CMD
-# NVIDIA Container Toolkit をインストール
-RUN apt-get update && \
-    curl -fsSL https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/gpgkey | apt-key add - && \
-    echo "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64 /" > /etc/apt/sources.list.d/cuda.list && \
-    apt-get update && \
-    apt-get install -y --fix-missing nvidia-container-toolkit
-# RUN curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | gpg --dearmor --no-tty --batch -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg && curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
-RUN sed -i -e '/experimental/ s/^#//g' /etc/apt/sources.list.d/nvidia-container-toolkit.list
-RUN apt-get update
-RUN apt-get install -y --no-install-recommends nvidia-container-toolkit
-RUN sed -i 's/^#no-cgroups = false/no-cgroups = false/' /etc/nvidia-container-runtime/config.toml
+# makeing the directory for the model
+RUN mkdir -p /workspace/Lite-HRNet/data/coco/
+# RUN mkdir -p /workspace/Lite-HRNet/data/coco/anotations
+# RUN mkdir -p /workspace/Lite-HRNet/data/coco/person_detection_results
+# RUN mkdir -p /workspace/Lite-HRNet/data/coco/train2017
+# RUN mkdir -p /workspace/Lite-HRNet/data/coco/val2017
 
-RUN DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends nvidia-driver-515
+WORKDIR /workspace/Lite-HRNet/data/coco
+
+# Download the COCO dataset
+RUN wget http://images.cocodataset.org/annotations/annotations_trainval2017.zip
+RUN unzip annotations_trainval2017.zip
+RUN rm annotations_trainval2017.zip
+
+# Download the COCO dataset
+RUN wget http://images.cocodataset.org/zips/train2017.zip
+RUN unzip train2017.zip
+RUN rm train2017.zip
+
+# Download the COCO dataset
+RUN wget http://images.cocodataset.org/zips/val2017.zip
+RUN unzip val2017.zip
+RUN rm val2017.zip
+
+# person detection results
+# RUN wget https://download.openmmlab.com/mmpose/data/coco/person_detection_results.zip
+
+
+WORKDIR /workspace/Lite-HRNet/data/coco/annotations
+RUN rm captions_train2017.json captions_val2017.json instances_train2017.json instances_val2017.json 
+
+# # RUN mkdir -p /workspace/Lite-HRNet/data/coco/person_detection_results
+# # WORKDIR /workspace/Lite-HRNet/data/coco/person_detection_results
+# RUN wget https://ffm9yw-ch3301.files.1drv.com/y4mME3XoqIXMaDII-DO8v7sps-FExrPi2vxphVlCcdEr7BNC3ckOz5kayj84jTmaoPBQuNVCYXa19OOAVfsbMj67gvgkxjLbRWkCAKs3lY-5UM8t6PaX-HjPKQK2pQmHeg1EQ5BJKS0XsUqpazhEtU9nmjVpr81nXI_HRzgb7KIVUhqD_LsCWDxinuNu-L3XyG8EPJYW3haahYmYfmB4EUerw
